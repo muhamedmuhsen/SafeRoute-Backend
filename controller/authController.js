@@ -4,6 +4,7 @@ const appError = require("../utils/appError");
 const user = require("../model/user.model");
 const httpStatusText = require("../utils/httpsStatusText");
 const bcrypt = require("bcryptjs");
+const generateToken = require("../utils/generateToken");
 
 const reqister = asynWrapper(async (req, res, next) => {
   const {
@@ -35,9 +36,12 @@ const reqister = asynWrapper(async (req, res, next) => {
     secondSosContact,
   });
   // generate token JWT
-  
+  const token = generateToken({ email: email, id: newUser._id });
+
   await newUser.save();
-  res.status(201).json({ status: httpStatusText.SUCCESS, data: newUser });
+  res
+    .status(201)
+    .json({ status: httpStatusText.SUCCESS, data: { newUser, token } });
 });
 
 const login = asynWrapper(async (req, res, next) => {
@@ -67,12 +71,13 @@ const login = asynWrapper(async (req, res, next) => {
       500,
       httpStatusText.ERROR
     );
-    next(err)
+    next(err);
   }
 
   // generate token
-
-  res.status(200).json({status:htttpStatusText.SUCCESS, data:{//token}})
+  const token = generateToken({ email: email, id: newUser._id });
+  
+  res.status(200).json({ status: htttpStatusText.SUCCESS, data: { token } });
 });
 
 module.exports = {
