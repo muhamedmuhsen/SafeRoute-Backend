@@ -1,5 +1,7 @@
-module.export = (aysncFunction) => {
+module.exports = (asyncFn) => {
   return (req, res, next) => {
-    aysncFunction(req, res, next).catch((err) => next(err));
+    asyncFn(req, res, next).catch((err) => {
+      next(err);
+    });
   };
 };

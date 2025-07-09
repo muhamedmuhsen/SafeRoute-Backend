@@ -10,7 +10,8 @@ const contactsSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim:true,
-    unquie:true
+    unique:true,
+    //match: [/^\+?\d{10,15}$/, "Please enter a valid phone number"],
   },
   email: {
     type: String,
@@ -18,8 +19,8 @@ const contactsSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
     unique: true,
-    //match: [/.+\@.+\..+/, "Please enter a valid email address"],
+    match: [/.+\@.+\..+/, "Please enter a valid email address"],
   },
 }, { timestamps: true });
 
-module.exports = mongoose.model("contacts", contactsModel);
+module.exports = mongoose.model("contacts", contactsSchema);

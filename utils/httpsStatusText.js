@@ -1,7 +1,7 @@
 const httpStatusText = {
     SUCCESS:"success",
     FAIL:"fail",
-    ERROR:"errro"
+    ERROR:"error"
 }
 
 module.exports = httpStatusText
