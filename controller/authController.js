@@ -1,10 +1,10 @@
-const asyncWrapper = require("../middleware/asyncWrapper");
-const htttpStatusText = require("../utils/httpsStatusText");
-const appError = require("../utils/appError");
-const user = require("../model/user.model");
-const httpStatusText = require("../utils/httpsStatusText");
-const bcrypt = require("bcryptjs");
-const generateToken = require("../utils/generateToken");
+import asyncWrapper from "../middleware/asyncWrapper.js";
+import htttpStatusText from "../utils/httpsStatusText.js";
+import appError from "../utils/appError.js";
+import user from "../model/user.model.js";
+import httpStatusText from "../utils/httpsStatusText.js";
+import bcrypt from "bcryptjs";
+import generateToken from "../utils/generateToken.js";
 
 const register = asyncWrapper(async (req, res, next) => {
   const {
@@ -17,6 +17,16 @@ const register = asyncWrapper(async (req, res, next) => {
     firstSosContact,
     secondSosContact,
   } = req.body;
+
+  // Check for required fields
+  if (!name || !phoneNumber || !email || !password || !profilePicture || !address || !firstSosContact || !secondSosContact) {
+    const err = appError.create(
+      "All fields are required",
+      400,
+      httpStatusText.FAIL
+    );
+    return next(err);
+  }
 
   const oldUser = await user.findOne({ email: email });
 
@@ -42,9 +52,11 @@ const register = asyncWrapper(async (req, res, next) => {
     secondSosContact,
   });
 
-  const token = generateToken({ email: email, id: newUser._id });
 
   await newUser.save();
+  
+  const token = generateToken({ email: email, id: newUser._id });
+
 
   // Remove password before sending response
   const userObj = newUser.toObject();
@@ -76,13 +88,9 @@ const login = asyncWrapper(async (req, res, next) => {
 
   const matchedPassword = await bcrypt.compare(password, searchUser.password);
 
-  if (!(searchUser && matchedPassword)) {
-    const err = appError.create(
-      "something went wrong",
-      500,
-      httpStatusText.ERROR
-    );
-    next(err);
+  if (!matchedPassword) {
+    const err = appError.create("Invalid credentials", 400, httpStatusText.FAIL);
+    return next(err);
   }
 
   // generate token
@@ -91,7 +99,7 @@ const login = asyncWrapper(async (req, res, next) => {
   res.status(200).json({ status: htttpStatusText.SUCCESS, data: { token } });
 });
 
-module.exports = {
+export {
   register,
   login
 };

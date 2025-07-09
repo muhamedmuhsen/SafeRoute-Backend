@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const { trim } = require("validator");
+import mongoose from "mongoose";
+import { trim } from "validator";
 
 const alertsSchema = new mongoose.Schema({
   time: {
@@ -18,4 +18,4 @@ const alertsSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model("alerts", alertsSchema);
+export default mongoose.model("alerts", alertsSchema);

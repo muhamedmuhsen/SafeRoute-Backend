@@ -1,9 +1,13 @@
-require("dotenv").config();
-const express = require("express");
+import dotenv from "dotenv";
+import express from "express";
+import mongoose from "mongoose";
+import userRoute from "./routes/user.route.js";
+import authRoute from "./routes/auth.route.js";
+import httpStatusText from './utils/httpsStatusText.js';
+
+dotenv.config();
 const app = express();
-const mongoose = require("mongoose");
-const userRoute = require("./routes/user.route");
-const authRoute = require("./routes/auth.route");
+
 app.use(express.json());
 
 mongoose
@@ -16,7 +20,7 @@ mongoose
   );
 
 app.use("/api/auth", authRoute);
-app.user("/api/profile", userRoute);
+app.use("/api/user", userRoute);
 
 // global middleware for not found router
 app.all("*", (req, res, next) => {
@@ -26,6 +30,16 @@ app.all("*", (req, res, next) => {
       status: httpStatusText.ERROR,
       message: "this resource is not available",
     });
+});
+
+// Global error handler
+app.use((error, req, res, next) => {
+  res.status(error.statusCode || 500).json({
+    status: error.statusText || httpStatusText.ERROR,
+    message: error.message,
+    code: error.statusCode || 500,
+    data: null
+  });
 });
 
 const PORT = process.env.PORT || 3000;

@@ -4,4 +4,4 @@ const httpStatusText = {
     ERROR:"error"
 }
 
-module.exports = httpStatusText
+export default httpStatusText;
