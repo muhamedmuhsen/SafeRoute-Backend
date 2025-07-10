@@ -3,7 +3,8 @@ import express from "express";
 import mongoose from "mongoose";
 import userRoute from "./routes/user.route.js";
 import authRoute from "./routes/auth.route.js";
-import httpStatusText from './utils/httpsStatusText.js';
+import contactsRoute from "./routes/contacts.route.js";
+import httpStatusText from "./utils/httpsStatusText.js";
 
 dotenv.config();
 const app = express();
@@ -21,15 +22,14 @@ mongoose
 
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
+app.use("/api/contacts", contactsRoute);
 
 // global middleware for not found router
 app.all("*", (req, res, next) => {
-  return res
-    .status(404)
-    .json({
-      status: httpStatusText.ERROR,
-      message: "this resource is not available",
-    });
+  return res.status(404).json({
+    status: httpStatusText.ERROR,
+    message: "this resource is not available",
+  });
 });
 
 // Global error handler
@@ -38,7 +38,7 @@ app.use((error, req, res, next) => {
     status: error.statusText || httpStatusText.ERROR,
     message: error.message,
     code: error.statusCode || 500,
-    data: null
+    data: null,
   });
 });
 
