@@ -1,25 +1,17 @@
 import asyncWrapper from "../middleware/asyncWrapper.js";
 import htttpStatusText from "../utils/httpsStatusText.js";
 import appError from "../utils/appError.js";
-import user from "../model/user.model.js";
+import User from "../model/user.model.js";
 import httpStatusText from "../utils/httpsStatusText.js";
 import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken.js";
 
 const register = asyncWrapper(async (req, res, next) => {
-  const {
-    name,
-    phoneNumber,
-    email,
-    password,
-    profilePicture,
-    address,
-    firstSosContact,
-    secondSosContact,
-  } = req.body;
+  const user = req.body;
 
   // Check for required fields
-  if (!name || !phoneNumber || !email || !password || !profilePicture || !address || !firstSosContact || !secondSosContact) {
+  if (!user) {
+    // check if trusted contacts will make error here ?
     const err = appError.create(
       "All fields are required",
       400,
@@ -28,7 +20,7 @@ const register = asyncWrapper(async (req, res, next) => {
     return next(err);
   }
 
-  const oldUser = await user.findOne({ email: email });
+  const oldUser = await User.findOne({ email: email });
 
   if (oldUser) {
     const err = appError.create(
@@ -41,7 +33,7 @@ const register = asyncWrapper(async (req, res, next) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const newUser = new user({
+  const newUser = new User({
     name,
     phoneNumber,
     email,
@@ -52,11 +44,9 @@ const register = asyncWrapper(async (req, res, next) => {
     secondSosContact,
   });
 
-
   await newUser.save();
-  
-  const token = generateToken({ email: email, id: newUser._id });
 
+  const token = generateToken({ email: email, id: newUser._id });
 
   // Remove password before sending response
   const userObj = newUser.toObject();
@@ -79,7 +69,7 @@ const login = asyncWrapper(async (req, res, next) => {
     return next(err);
   }
 
-  const searchUser = await user.findOne({ email: email });
+  const searchUser = await User.findOne({ email: email });
 
   if (!searchUser) {
     const err = appError.create("Email not fonud", 400, htttpStatusText.FAIL);
@@ -89,7 +79,11 @@ const login = asyncWrapper(async (req, res, next) => {
   const matchedPassword = await bcrypt.compare(password, searchUser.password);
 
   if (!matchedPassword) {
-    const err = appError.create("Invalid credentials", 400, httpStatusText.FAIL);
+    const err = appError.create(
+      "Invalid credentials",
+      400,
+      httpStatusText.FAIL
+    );
     return next(err);
   }
 
@@ -99,7 +93,4 @@ const login = asyncWrapper(async (req, res, next) => {
   res.status(200).json({ status: htttpStatusText.SUCCESS, data: { token } });
 });
 
-export {
-  register,
-  login
-};
+export { register, login };
