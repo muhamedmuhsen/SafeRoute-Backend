@@ -7,54 +7,57 @@ import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken.js";
 
 const register = asyncWrapper(async (req, res, next) => {
-  const user = req.body;
+  try {
+    const user = req.body;
 
-  // Check for required fields
-  if (!user) {
-    // check if trusted contacts will make error here ?
+    // Check for required fields
+    if (!user) {
+      // check if trusted contacts will make error here ?
+      const err = appError.create(
+        "All fields are required",
+        400,
+        httpStatusText.FAIL
+      );
+      return next(err);
+    }
+
+    const oldUser = await User.findOne({ email: user.email });
+
+    if (oldUser) {
+      const err = appError.create(
+        "user already exists",
+        400,
+        httpStatusText.FAIL
+      );
+      return next(err);
+    }
+
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+
+    const newUser = new User({
+      ...user,
+      password: hashedPassword
+    });
+
+    await newUser.save();
+
+    const token = generateToken({ email: newUser.email, id: newUser._id });
+
+    // Remove password before sending response
+    const userObj = newUser.toObject();
+    delete userObj.password;
+
+    res
+      .status(201)
+      .json({ status: httpStatusText.SUCCESS, data: { user: userObj, token } });
+  } catch (error) {
     const err = appError.create(
-      "All fields are required",
-      400,
-      httpStatusText.FAIL
+      `error while creating user` + ", " + error.message,
+      500,
+      httpStatusText.error
     );
     return next(err);
   }
-
-  const oldUser = await User.findOne({ email: email });
-
-  if (oldUser) {
-    const err = appError.create(
-      "user already exists",
-      400,
-      httpStatusText.FAIL
-    );
-    return next(err);
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const newUser = new User({
-    name,
-    phoneNumber,
-    email,
-    password: hashedPassword,
-    profilePicture,
-    address,
-    firstSosContact,
-    secondSosContact,
-  });
-
-  await newUser.save();
-
-  const token = generateToken({ email: email, id: newUser._id });
-
-  // Remove password before sending response
-  const userObj = newUser.toObject();
-  delete userObj.password;
-
-  res
-    .status(201)
-    .json({ status: httpStatusText.SUCCESS, data: { user: userObj, token } });
 });
 
 const login = asyncWrapper(async (req, res, next) => {
