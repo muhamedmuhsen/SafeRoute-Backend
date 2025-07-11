@@ -4,32 +4,28 @@ import asyncWrapper from "./asyncWrapper.js";
 import httpStatusText from "../utils/httpsStatusText.js";
 import appError from "../utils/appError.js";
 
+/**
+ * Authentication middleware to verify JWT and attach user to request
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {Function} next
+ */
 const authMiddleware = asyncWrapper(async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  // Fix: Correct property and method name
+  const { authorization: authHeader } = req.headers;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res
-      .status(401)
-      .json({ status: httpStatusText.FAIL, message: "unauthorized user" });
+    return next(appError.create("Unauthorized user", 401, httpStatusText.FAIL));
   }
-
   try {
     const token = authHeader.split(" ")[1];
     const decode = jwt.verify(token, process.env.JWT_SECRET);
-
     const user = await User.findById(decode.id);
-    
     if (!user) {
-      const err = appError.create("user not found", 404, httpStatusText.FAIL);
-      return next(err);
+      return next(appError.create("User not found", 404, httpStatusText.FAIL));
     }
-
     req.user = user;
     next();
   } catch (error) {
-    const err = appError.create("invalid token", 401, httpStatusText.ERROR);
-    return next(err);
+    return next(appError.create("Invalid token", 401, httpStatusText.ERROR));
   }
 });
 

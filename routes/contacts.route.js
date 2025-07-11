@@ -1,14 +1,14 @@
-import express from "express";
+/**
+ * Contacts Routes
+ * @route /contacts
+ */
+import { Router } from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
+import { getTrustedContacts, addTrustedContact } from "../controller/contacts.controller.js";
 
-import {
-  getTrustedContacts,
-  addTrustedContact,
-} from "../controller/contactsController.js";
+const router = Router();
 
-const router = express.Router();
-
-router.route("/").get(authMiddleware, getTrustedContacts);
-router.route("/").post(authMiddleware, addTrustedContact);
+router.get("/", authMiddleware, getTrustedContacts);
+router.post("/", authMiddleware, addTrustedContact);
 
 export default router;

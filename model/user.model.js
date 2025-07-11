@@ -1,5 +1,17 @@
 import mongoose from "mongoose";
 
+/**
+ * User Schema
+ * @typedef {Object} User
+ * @property {String} name - Name of the user
+ * @property {String} phoneNumber - Phone number of the user
+ * @property {String} email - Email address of the user
+ * @property {String} password - Hashed password
+ * @property {String} profilePicture - URL to profile picture
+ * @property {String} address - Address of the user
+ * @property {String} firstSosContact - First SOS contact
+ * @property {String} secondSosContact - Second SOS contact
+ */
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -12,7 +24,6 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
       unique: true,
-      //match: [/^\+?\d{10,15}$/, "Please enter a valid phone number"],
     },
     email: {
       type: String,
@@ -20,7 +31,6 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       unique: true,
-      //match: [/.+\@.+\..+/, "Please enter a valid email address"],
     },
     password: {
       type: String,
@@ -30,7 +40,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      // Optionally, add a URL validator here
     },
     address: {
       type: String,
@@ -51,4 +60,4 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("users", userSchema);
+export default mongoose.model("User", userSchema);

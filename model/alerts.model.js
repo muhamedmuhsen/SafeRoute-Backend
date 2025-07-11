@@ -1,7 +1,13 @@
 import mongoose from "mongoose";
-import { trim } from "validator";
 
-const alertsSchema = new mongoose.Schema({
+/**
+ * Alert Schema
+ * @typedef {Object} Alert
+ * @property {Date} time - The time of the alert
+ * @property {String} description - Description of the alert
+ * @property {String} icon - Icon representing the alert
+ */
+const alertSchema = new mongoose.Schema({
   time: {
     type: Date,
     required: true,
@@ -18,4 +24,4 @@ const alertsSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-export default mongoose.model("alerts", alertsSchema);
+export default mongoose.model("Alert", alertSchema);
