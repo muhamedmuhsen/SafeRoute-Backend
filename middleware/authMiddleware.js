@@ -19,6 +19,7 @@ const authMiddleware = asyncWrapper(async (req, res, next) => {
     const decode = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(decode.id);
+    
     if (!user) {
       const err = appError.create("user not found", 404, httpStatusText.FAIL);
       return next(err);

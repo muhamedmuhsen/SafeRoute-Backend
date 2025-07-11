@@ -1,8 +1,11 @@
 import { Router } from "express";
-import { getUser } from "../controller/userController.js";
+import { getUser, getUserLocation } from "../controller/userController.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = Router();
 
-router.route("/:id").get(getUser);
+router.route("/location").get(authMiddleware, getUserLocation);
+router.route("/:id").get(authMiddleware, getUser);
+
 
 export default router;
