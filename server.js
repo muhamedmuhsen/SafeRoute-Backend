@@ -28,7 +28,7 @@ async function connectDB() {
 connectDB();
 
 // Routes
-app.use("/api/auth", authRoute);
+app.use("/api/auth", authRoute); 
 app.use("/api/user", userRoute);
 app.use("/api/contacts", contactsRoute);
 app.use("/api/sos", sosRoute);

@@ -14,7 +14,7 @@ const getTrustedContacts = asyncWrapper(async (req, res, next) => {
   res.status(200).json({
     status: httpStatusText.SUCCESS,
     data: { contacts },
-    message: "Contacts fetched successfully"
+    message: "Contacts fetched successfully",
   });
 });
 
@@ -26,18 +26,18 @@ const addTrustedContact = asyncWrapper(async (req, res, next) => {
   const user = req.user;
   const contact = req.body;
   if (!user) {
-    return next(appError.create(
-      "User not authenticated",
-      400,
-      httpStatusText.FAIL
-    ));
+    return next(
+      appError.create("User not authenticated", 400, httpStatusText.FAIL)
+    );
   }
   if (!contact.name || !contact.phone) {
-    return next(appError.create(
-      "Contact name and phone are required",
-      400,
-      httpStatusText.FAIL
-    ));
+    return next(
+      appError.create(
+        "Contact name and phone are required",
+        400,
+        httpStatusText.FAIL
+      )
+    );
   }
   const addedContact = new Contact({
     name: contact.name,
@@ -48,8 +48,89 @@ const addTrustedContact = asyncWrapper(async (req, res, next) => {
   res.status(201).json({
     status: httpStatusText.SUCCESS,
     data: { contact: addedContact },
-    message: "Contact added successfully"
+    message: "Contact added successfully",
   });
 });
 
-export { getTrustedContacts, addTrustedContact };
+const updateTrustedContact = asyncWrapper(async (req, res, next) => {
+  const user = req.user;
+
+  if (!user) {
+    return next(
+      appError.create("User not authenticated", 400, httpStatusText.FAIL)
+    );
+  }
+
+  const updateData = req.body;
+
+  if (!updateData.name || !updateData.phone) {
+    return next(
+      appError.create(
+        "Contact name and phone are required",
+        400,
+        httpStatusText.FAIL
+      )
+    );
+  }
+
+  // Find the first contact for this user
+  let existingContact = await Contact.findOne({ user: user._id });
+
+  let updatedContact;
+
+  if (existingContact) {
+    // Update existing contact
+    updatedContact = await Contact.findByIdAndUpdate(
+      existingContact._id,
+      { name: updateData.name, phone: updateData.phone },
+      { new: true, runValidators: true }
+    );
+  } else {
+    // Create new contact if none exists
+    updatedContact = new Contact({
+      name: updateData.name,
+      phone: updateData.phone,
+      user: user._id,
+    });
+    await updatedContact.save();
+  }
+
+  res.status(200).json({
+    status: httpStatusText.SUCCESS,
+    data: { contact: updatedContact },
+    message: existingContact
+      ? "Contact updated successfully"
+      : "Contact created successfully",
+  });
+});
+
+const deleteTrustedContact = asyncWrapper(async (req, res, next) => {
+  const user = req.user;
+
+  if (!user) {
+    return next(
+      appError.create("User not authenticated", 400, httpStatusText.FAIL)
+    );
+  }
+
+  const {phone} = req.body;
+  if (!phone) {
+    return next(
+      appError.create("Contact phone are required", 400, httpStatusText.FAIL)
+    );
+  }
+
+  await Contact.findOneAndDelete({ phone: phone });
+
+  res.status(200).json({
+    status: httpStatusText.SUCCESS,
+    message: "Contact deleted successfully",
+  });
+});
+
+export {
+  getTrustedContacts,
+  addTrustedContact,
+  updateTrustedContact,
+  deleteTrustedContact,
+};
