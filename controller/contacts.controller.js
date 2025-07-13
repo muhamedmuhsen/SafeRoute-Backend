@@ -113,17 +113,32 @@ const deleteTrustedContact = asyncWrapper(async (req, res, next) => {
     );
   }
 
-  const {phone} = req.body;
+  const { phone } = req.body;
+
   if (!phone) {
     return next(
-      appError.create("Contact phone are required", 400, httpStatusText.FAIL)
+      appError.create("Contact phone is required", 400, httpStatusText.FAIL)
     );
   }
 
-  await Contact.findOneAndDelete({ phone: phone });
+  // Find and delete the contact, ensuring it belongs to the authenticated user
+  const deletedContact = await Contact.findOneAndDelete({
+    phone: phone
+  });
+
+  if (!deletedContact) {
+    return next(
+      appError.create(
+        "Contact not found or you don't have permission to delete it",
+        404,
+        httpStatusText.FAIL
+      )
+    );
+  }
 
   res.status(200).json({
     status: httpStatusText.SUCCESS,
+    data: { contact: deletedContact },
     message: "Contact deleted successfully",
   });
 });
